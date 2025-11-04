@@ -828,8 +828,12 @@ MenuBar.defaultProps = {
 };
 
 const mapStateToProps = (state, ownProps) => {
+    
     const loadingState = state.scratchGui.projectState.loadingState;
-    const user = state.session && state.session.session && state.session.session.user;
+    const user =
+        state.scratchGui.session &&
+        state.scratchGui.session.session &&
+        state.scratchGui.session.session.user;
     return {
         aboutMenuOpen: aboutMenuOpen(state),
         accountMenuOpen: accountMenuOpen(state),
@@ -843,17 +847,21 @@ const mapStateToProps = (state, ownProps) => {
         loginMenuOpen: loginMenuOpen(state),
         modeMenuOpen: modeMenuOpen(state),
         projectTitle: state.scratchGui.projectTitle,
-        sessionExists: state.session && typeof state.session.session !== 'undefined',
+        sessionExists:
+            state.scratchGui.session &&
+            typeof state.scratchGui.session.session !== "undefined",
         settingsMenuOpen: settingsMenuOpen(state),
         username: user ? user.username : null,
-        userOwnsProject: ownProps.authorUsername && user &&
-            (ownProps.authorUsername === user.username),
+        userOwnsProject:
+            ownProps.authorUsername &&
+            user &&
+            ownProps.authorUsername === user.username,
         vm: state.scratchGui.vm,
         mode220022BC: isTimeTravel220022BC(state),
         mode1920: isTimeTravel1920(state),
         mode1990: isTimeTravel1990(state),
         mode2020: isTimeTravel2020(state),
-        modeNow: isTimeTravelNow(state)
+        modeNow: isTimeTravelNow(state),
     };
 };
 
