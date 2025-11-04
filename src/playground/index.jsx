@@ -13,20 +13,20 @@ import supportedBrowser from "../lib/supported-browser";
 
 import styles from "./index.css";
 
-// 检查 URL 是否包含 token 参数
-const token = new URLSearchParams(window.location.search).get("token");
-// 如果没有 token，则跳转回原网站
-if (!token) {
+// 检查 URL 是否包含参数
+const param = new URLSearchParams(window.location.search);
+const token = param.get("token");
+const refreshToken = param.get("refresh-token");
+// 如果没有，则跳转回原网站
+if (!token || !refreshToken) {
     window.location.href =
         window.location.hostname === "localhost"
             ? "http://localhost:5173/login"
             : "https://blockcode.com.cn/login";
 }
-// 如果有 token，则将其存储在 sessionStorage 中
-sessionStorage.setItem("token", token);
-// 清除地址栏参数（防止泄露）
-const cleanUrl = window.location.origin + window.location.pathname;
-window.history.replaceState({}, document.title, cleanUrl);
+// 如果有，则将其存储在 localStorage 中
+localStorage.setItem("token", token);
+localStorage.setItem("refresh-token", refreshToken);
 
 const appTarget = document.createElement("div");
 appTarget.className = styles.app;
