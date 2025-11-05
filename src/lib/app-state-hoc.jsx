@@ -103,7 +103,7 @@ const AppStateHOC = function (WrappedComponent, localesOnly) {
             localStorage.removeItem("token");
             localStorage.removeItem("refresh-token");
             // 获取用户信息
-            const {
+            let {
                 data: {
                     session: { user },
                 },
@@ -116,17 +116,25 @@ const AppStateHOC = function (WrappedComponent, localesOnly) {
                         : "https://blockcode.com.cn/login";
                 return;
             }
+            const profile = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("id", user.id)
+                .maybeSingle();
+            if (profile.error ) console.error(profile.error);
             const sessionState = {
                 session: {
                     user: {
-                        username: user.email.split("@")[0], // 用邮箱前缀做 username
+                        username: profile.data.nick_name
+                            ? profile.data.nick_name
+                            : user.email.split("@")[0], // 用邮箱前缀做 username
                         thumbnailUrl: null, // Supabase avatar 或 null
-                        classroomId: null, // 如果你没有 classroom，可以先置 null
+                        classroomId: String(profile.data.class), // 如果你没有 classroom，可以先置 null
                     },
                 },
                 permissions: {
-                    educator: false, // 默认 false，可根据实际业务修改
-                    student: true, // 默认 true
+                    educator: profile.data.role === "student" ? false : true, // 默认 false，可根据实际业务修改
+                    student: profile.data.role === "student" ? true : false, // 默认 true
                 },
             };
             // 注入 Redux
