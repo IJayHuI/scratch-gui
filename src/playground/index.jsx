@@ -25,8 +25,9 @@ const param = new URLSearchParams(window.location.search);
 const token = param.get("token");
 const refreshToken = param.get("refresh-token");
 const projectId = param.get("project-id");
+localStorage.setItem('project-id', projectId)
 // 如果没有，则跳转回原网站
-if (!token || !refreshToken) {
+if (!token || !refreshToken || !projectId) {
     window.location.href =
         window.location.hostname === "localhost"
             ? "http://localhost:5173/login"
@@ -90,23 +91,20 @@ const sessionState = {
 };
 // 注入 Redux
 storage.reduxStore.dispatch(setSession(sessionState));
-if (projectId) {
-    const { data, error } = await supabase
-        .from("files")
-        .select("*")
-        .eq("id", projectId)
-        .single();
-    if (error) {
-        this.props.onError(error);
-        log.error(error);
-    }
-    const {
-        data: { signedUrl: fileUrl },
-    } = await supabase.storage
-        .from("files")
-        .createSignedUrl(data.file_path, 60 * 60);
-    storage.reduxStore.dispatch(setProjectId(fileUrl));
-    storage.reduxStore.dispatch(setProjectTitle(data.file_name))
+const { data: fileData, error: errorData } = await supabase
+    .from("files")
+    .select("*")
+    .eq("id", projectId)
+    .single();
+if (errorData) {
+    this.props.onError(errorData);
+    log.error(errorData);
 }
-console.log(storage.reduxStore.getState())
+const {
+    data: { signedUrl: fileUrl },
+} = await supabase.storage
+    .from("files")
+    .createSignedUrl(fileData.file_path, 60 * 60);
+storage.reduxStore.dispatch(setProjectId(fileUrl));
+storage.reduxStore.dispatch(setProjectTitle(fileData.file_name));
 storage.reduxStore.dispatch(closeLoadingProject());
