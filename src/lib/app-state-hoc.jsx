@@ -14,8 +14,7 @@ import { setPlayer, setFullScreen } from "../reducers/mode.js";
 import locales from "scratch-l10n";
 import { detectLocale } from "./detect-locale";
 
-import { supabase } from "./supabase-client.js";
-import { setSession } from "../reducers/session.js";
+import storage from "./storage.js";
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
@@ -85,6 +84,7 @@ const AppStateHOC = function (WrappedComponent, localesOnly) {
             }
             const reducer = combineReducers(reducers);
             this.store = createStore(reducer, initialState, enhancer);
+            storage.reduxStore = this.store;
         }
         componentDidUpdate(prevProps) {
             if (localesOnly) return;
@@ -94,51 +94,6 @@ const AppStateHOC = function (WrappedComponent, localesOnly) {
             if (prevProps.isFullScreen !== this.props.isFullScreen) {
                 this.store.dispatch(setFullScreen(this.props.isFullScreen));
             }
-        }
-        async componentDidMount() {
-            await supabase.auth.setSession({
-                access_token: localStorage.getItem("token"),
-                refresh_token: localStorage.getItem("refresh-token"),
-            });
-            localStorage.removeItem("token");
-            localStorage.removeItem("refresh-token");
-            // 获取用户信息
-            let {
-                data: {
-                    session: { user },
-                },
-                error,
-            } = await supabase.auth.getSession();
-            if (error) {
-                window.location.href =
-                    window.location.hostname === "localhost"
-                        ? "http://localhost:5173/login"
-                        : "https://blockcode.com.cn/login";
-                return;
-            }
-            const profile = await supabase
-                .from("profiles")
-                .select("*")
-                .eq("id", user.id)
-                .maybeSingle();
-            if (profile.error ) console.error(profile.error);
-            const sessionState = {
-                session: {
-                    user: {
-                        username: profile.data.nick_name
-                            ? profile.data.nick_name
-                            : user.email.split("@")[0], // 用邮箱前缀做 username
-                        thumbnailUrl: null, // Supabase avatar 或 null
-                        classroomId: String(profile.data.class), // 如果你没有 classroom，可以先置 null
-                    },
-                },
-                permissions: {
-                    educator: profile.data.role === "student" ? false : true, // 默认 false，可根据实际业务修改
-                    student: profile.data.role === "student" ? true : false, // 默认 true
-                },
-            };
-            // 注入 Redux
-            this.store.dispatch(setSession(sessionState));
         }
         render() {
             const {

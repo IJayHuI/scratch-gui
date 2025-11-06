@@ -13,10 +13,17 @@ import supportedBrowser from "../lib/supported-browser";
 
 import styles from "./index.css";
 
+import storage from "../lib/storage.js";
+import { supabase } from "../lib/supabase-client.js";
+import { setSession } from "../reducers/session.js";
+import { setProjectId } from "../reducers/project-state.js";
+import { openLoadingProject, closeLoadingProject } from "../reducers/modals.js";
+
 // 检查 URL 是否包含参数
 const param = new URLSearchParams(window.location.search);
 const token = param.get("token");
 const refreshToken = param.get("refresh-token");
+const projectId = param.get("project-id");
 // 如果没有，则跳转回原网站
 if (!token || !refreshToken) {
     window.location.href =
@@ -24,9 +31,16 @@ if (!token || !refreshToken) {
             ? "http://localhost:5173/login"
             : "https://blockcode.com.cn/login";
 }
-// 如果有，则将其存储在 localStorage 中
-localStorage.setItem("token", token);
-localStorage.setItem("refresh-token", refreshToken);
+const { error } = await supabase.auth.setSession({
+    access_token: token,
+    refresh_token: refreshToken,
+});
+if (error) {
+    window.location.href =
+        window.location.hostname === "localhost"
+            ? "http://localhost:5173/login"
+            : "https://blockcode.com.cn/login";
+}
 
 const appTarget = document.createElement("div");
 appTarget.className = styles.app;
@@ -49,3 +63,32 @@ if (supportedBrowser()) {
         appTarget
     );
 }
+
+storage.reduxStore.dispatch(openLoadingProject())
+const { data } = await supabase.auth.getSession();
+const profile = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", data.session.user.id)
+    .maybeSingle();
+if (profile.error) console.error(profile.error);
+const sessionState = {
+    session: {
+        user: {
+            username: profile.data.nick_name
+                ? profile.data.nick_name
+                : data.session.user.email.split("@")[0], // 用邮箱前缀做 username
+            thumbnailUrl: null, // Supabase avatar 或 null
+            classroomId: String(profile.data.class), // 如果你没有 classroom，可以先置 null
+        },
+    },
+    permissions: {
+        educator: profile.data.role === "student" ? false : true, // 默认 false，可根据实际业务修改
+        student: profile.data.role === "student" ? true : false, // 默认 true
+    },
+};
+// 注入 Redux
+storage.reduxStore.dispatch(setSession(sessionState));
+storage.reduxStore.dispatch(closeLoadingProject())
+
+// if (projectId) storage.store.dispatch(setProjectId(projectId));
