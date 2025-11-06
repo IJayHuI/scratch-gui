@@ -16,8 +16,8 @@ import styles from "./index.css";
 import storage from "../lib/storage.js";
 import { supabase } from "../lib/supabase-client.js";
 import { setSession } from "../reducers/session.js";
-import { setProjectId } from "../reducers/project-state.js";
 import { openLoadingProject, closeLoadingProject } from "../reducers/modals.js";
+import { setProjectId } from "../reducers/project-state.js";
 
 // 检查 URL 是否包含参数
 const param = new URLSearchParams(window.location.search);
@@ -64,7 +64,7 @@ if (supportedBrowser()) {
     );
 }
 
-storage.reduxStore.dispatch(openLoadingProject())
+storage.reduxStore.dispatch(openLoadingProject());
 const { data } = await supabase.auth.getSession();
 const profile = await supabase
     .from("profiles")
@@ -89,6 +89,6 @@ const sessionState = {
 };
 // 注入 Redux
 storage.reduxStore.dispatch(setSession(sessionState));
-storage.reduxStore.dispatch(closeLoadingProject())
+storage.reduxStore.dispatch(closeLoadingProject());
+// if(projectId) storage.reduxStore.dispatch(setProjectId(projectId));
 
-// if (projectId) storage.store.dispatch(setProjectId(projectId));

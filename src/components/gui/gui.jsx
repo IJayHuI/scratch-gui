@@ -450,7 +450,7 @@ GUIComponent.defaultProps = {
     basePath: './',
     blocksId: 'original',
     canChangeLanguage: false,
-    canChangeTheme: false,
+    canChangeTheme: true,
     canCreateNew: false,
     canEditTitle: false,
     canManageFiles: true,
