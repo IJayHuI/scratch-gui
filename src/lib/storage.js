@@ -32,26 +32,23 @@ class Storage extends ScratchStorage {
             asset => `static/extension-assets/scratch3_music/${asset.assetId}.${asset.dataFormat}`
         );
     }
-    setProjectHost (projectHost) {
-        this.projectHost = projectHost;
-    }
     setProjectToken (projectToken) {
         this.projectToken = projectToken;
     }
     getProjectGetConfig (projectAsset) {
-        const path = `${this.projectHost}/${projectAsset.assetId}`;
+        const path = projectAsset.assetId;
         const qs = this.projectToken ? `?token=${this.projectToken}` : '';
         return path + qs;
     }
     getProjectCreateConfig () {
         return {
-            url: `${this.projectHost}/`,
+            url: '',
             withCredentials: true
         };
     }
     getProjectUpdateConfig (projectAsset) {
         return {
-            url: `${this.projectHost}/${projectAsset.assetId}`,
+            url: projectAsset.assetId,
             withCredentials: true
         };
     }
@@ -77,7 +74,6 @@ class Storage extends ScratchStorage {
         this.cacheDefaultProject();
     }
     cacheDefaultProject () {
-        
         const defaultProjectAssets = defaultProject(this.translator);
         defaultProjectAssets.forEach(asset => this.builtinHelper._store(
             this.AssetType[asset.assetType],

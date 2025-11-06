@@ -17,6 +17,7 @@ import storage from "../lib/storage.js";
 import { supabase } from "../lib/supabase-client.js";
 import { setSession } from "../reducers/session.js";
 import { openLoadingProject, closeLoadingProject } from "../reducers/modals.js";
+import { setProjectTitle } from "../reducers/project-title.js";
 import { setProjectId } from "../reducers/project-state.js";
 
 // 检查 URL 是否包含参数
@@ -89,6 +90,23 @@ const sessionState = {
 };
 // 注入 Redux
 storage.reduxStore.dispatch(setSession(sessionState));
+if (projectId) {
+    const { data, error } = await supabase
+        .from("files")
+        .select("*")
+        .eq("id", projectId)
+        .single();
+    if (error) {
+        this.props.onError(error);
+        log.error(error);
+    }
+    const {
+        data: { signedUrl: fileUrl },
+    } = await supabase.storage
+        .from("files")
+        .createSignedUrl(data.file_path, 60 * 60);
+    storage.reduxStore.dispatch(setProjectId(fileUrl));
+    storage.reduxStore.dispatch(setProjectTitle(data.file_name))
+}
+console.log(storage.reduxStore.getState())
 storage.reduxStore.dispatch(closeLoadingProject());
-// if(projectId) storage.reduxStore.dispatch(setProjectId(projectId));
-

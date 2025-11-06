@@ -32,7 +32,6 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         constructor(props) {
             super(props);
             bindAll(this, ["fetchProject"]);
-            storage.setProjectHost(props.projectHost);
             storage.setProjectToken(props.projectToken);
             storage.setAssetHost(props.assetHost);
             storage.setTranslatorFunction(props.intl.formatMessage);
@@ -50,9 +49,6 @@ const ProjectFetcherHOC = function (WrappedComponent) {
             }
         }
         componentDidUpdate(prevProps) {
-            if (prevProps.projectHost !== this.props.projectHost) {
-                storage.setProjectHost(this.props.projectHost);
-            }
             if (prevProps.projectToken !== this.props.projectToken) {
                 storage.setProjectToken(this.props.projectToken);
             }
@@ -76,9 +72,6 @@ const ProjectFetcherHOC = function (WrappedComponent) {
             }
         }
         fetchProject(projectId, loadingState) {
-            console.log(storage.AssetType);
-            console.log(storage.DataFormat)
-
             return storage
                 .load(
                     storage.AssetType.Project,
@@ -153,7 +146,6 @@ const ProjectFetcherHOC = function (WrappedComponent) {
     };
     ProjectFetcherComponent.defaultProps = {
         assetHost: "https://assets.scratch.mit.edu",
-        projectHost: "https://projects.scratch.mit.edu",
     };
 
     const mapStateToProps = (state) => ({
