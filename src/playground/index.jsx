@@ -81,7 +81,7 @@ const sessionState = {
                 ? profile.data.nick_name
                 : data.session.user.email.split("@")[0], // 用邮箱前缀做 username
             thumbnailUrl: null, // Supabase avatar 或 null
-            classroomId: String(profile.data.class), // 如果你没有 classroom，可以先置 null
+            classroomId: null, // 可以置 null
         },
     },
     permissions: {
