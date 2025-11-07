@@ -42,7 +42,8 @@ import {
     manualUpdateProject,
     requestNewProject,
     remixProject,
-    saveProjectAsCopy
+    saveProjectAsCopy,
+    createProject
 } from '../../reducers/project-state';
 import {
     openAboutMenu,
@@ -87,6 +88,8 @@ import prehistoricLogo from './prehistoric-logo.svg';
 import oldtimeyLogo from './oldtimey-logo.svg';
 
 import sharedMessages from '../../lib/shared-messages';
+
+import storage from '../../lib/storage.js';
 
 const MenuBarItemTooltip = ({
     children,
@@ -163,6 +166,7 @@ class MenuBar extends React.Component {
             'handleClickRemix',
             'handleClickSave',
             'handleClickSaveAsCopy',
+            'handleClickCreateProject',
             'handleSetMode',
             'handleKeyPress',
             'handleRestoreOption',
@@ -201,6 +205,10 @@ class MenuBar extends React.Component {
     }
     handleClickSaveAsCopy () {
         this.props.onClickSaveAsCopy();
+        this.props.onRequestCloseFile();
+    }
+    handleClickCreateProject () {
+        this.props.onClickCreateProject();
         this.props.onRequestCloseFile();
     }
     handleSetMode (mode) {
@@ -440,18 +448,44 @@ class MenuBar extends React.Component {
                                     }
                                 >
                                     <MenuSection>
-                                        <MenuItem
-                                            isRtl={this.props.isRtl}
-                                            onClick={this.handleClickSave}
-                                        >
-                                            保存到 BlockCode
-                                        </MenuItem>
-                                        <MenuItem
-                                            isRtl={this.props.isRtl}
-                                            onClick={this.handleClickSaveAsCopy}
-                                        >
-                                            另存为新作品到 BlockCode
-                                        </MenuItem>
+                                        {storage.reduxStore.getState()
+                                            .scratchGui.projectState
+                                            .loadingState ===
+                                            "SHOWING_WITH_ID" && (
+                                            <MenuItem
+                                                isRtl={this.props.isRtl}
+                                                onClick={this.handleClickSave}
+                                            >
+                                                保存到 BlockCode
+                                            </MenuItem>
+                                        )}
+                                        {storage.reduxStore.getState()
+                                            .scratchGui.projectState
+                                            .loadingState ===
+                                            "SHOWING_WITH_ID" && (
+                                            <MenuItem
+                                                isRtl={this.props.isRtl}
+                                                onClick={
+                                                    this.handleClickSaveAsCopy
+                                                }
+                                            >
+                                                另存为新作品到 BlockCode
+                                            </MenuItem>
+                                        )}
+                                        {storage.reduxStore.getState()
+                                            .scratchGui.projectState
+                                            .loadingState ===
+                                            "SHOWING_WITHOUT_ID" && (
+                                                <MenuItem
+                                                    isRtl={this.props.isRtl}
+                                                    onClick={
+                                                        this
+                                                            .handleClickCreateProject
+                                                    }
+                                                >
+                                                    保存此作品到 BlockCode
+                                                </MenuItem>
+                                            )}
                                     </MenuSection>
                                     {(this.props.canSave ||
                                         this.props.canCreateCopy ||
@@ -488,6 +522,16 @@ class MenuBar extends React.Component {
                                         </MenuSection>
                                     )}
                                     <MenuSection>
+                                        <MenuItem
+                                            onClick={
+                                                this.props
+                                                    .onStartSelectingFileUpload
+                                            }
+                                        >
+                                            {this.props.intl.formatMessage(
+                                                sharedMessages.loadFromComputerTitle
+                                            )}
+                                        </MenuItem>
                                         <SB3Downloader>
                                             {(
                                                 className,
@@ -859,6 +903,7 @@ MenuBar.propTypes = {
     onClickRemix: PropTypes.func,
     onClickSave: PropTypes.func,
     onClickSaveAsCopy: PropTypes.func,
+    onClickCreateProject: PropTypes.func,
     onClickSettings: PropTypes.func,
     onLogOut: PropTypes.func,
     onOpenRegistration: PropTypes.func,
@@ -954,6 +999,7 @@ const mapDispatchToProps = dispatch => ({
     onClickRemix: () => dispatch(remixProject()),
     onClickSave: () => dispatch(manualUpdateProject()),
     onClickSaveAsCopy: () => dispatch(saveProjectAsCopy()),
+    onClickCreateProject: () => dispatch(createProject()),
     onSeeCommunity: () => dispatch(setPlayer(true)),
     onSetTimeTravelMode: mode => dispatch(setTimeTravel(mode))
 });
