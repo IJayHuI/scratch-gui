@@ -141,10 +141,7 @@ class LibraryItem extends React.PureComponent {
 LibraryItem.propTypes = {
     bluetoothRequired: PropTypes.bool,
     collaborator: PropTypes.string,
-    description: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.node
-    ]),
+    description: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
     disabled: PropTypes.bool,
     extensionId: PropTypes.string,
     featured: PropTypes.bool,
@@ -154,21 +151,18 @@ LibraryItem.propTypes = {
     icons: PropTypes.arrayOf(
         PropTypes.shape({
             baseLayerMD5: PropTypes.string, // 2.0 library format, TODO GH-5084
-            md5ext: PropTypes.string // 3.0 library format
+            md5ext: PropTypes.string, // 3.0 library format
         })
     ),
-    id: PropTypes.number.isRequired,
+    id: PropTypes.string.isRequired,
     insetIconURL: PropTypes.string,
     internetConnectionRequired: PropTypes.bool,
     isPlaying: PropTypes.bool,
-    name: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.node
-    ]),
+    name: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
     onMouseEnter: PropTypes.func.isRequired,
     onMouseLeave: PropTypes.func.isRequired,
     onSelect: PropTypes.func.isRequired,
-    showPlayButton: PropTypes.bool
+    showPlayButton: PropTypes.bool,
 };
 
 export default injectIntl(LibraryItem);
