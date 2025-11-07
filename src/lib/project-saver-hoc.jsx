@@ -32,6 +32,8 @@ import {
 } from "../reducers/project-state";
 
 import { supabase } from "./supabase-client";
+import { v4 as uuidv4 } from "uuid";
+import { setProjectId } from "../reducers/project-state";
 
 /**
  * Higher Order Component to provide behavior for saving projects.
@@ -168,26 +170,22 @@ const ProjectSaverHOC = function (WrappedComponent) {
         async updateProjectToStorage() {
             if (this.props.loadingState === "MANUAL_UPDATING") {
                 const blob = await this.props.vm.saveProjectSb3();
-                console.log(this.props);
                 const { data: fileData, error: errorData } = await supabase
                     .from("files")
                     .select("*")
                     .eq("id", localStorage.getItem("project-id"))
                     .single();
                 if (errorData) {
-                    window.alert("文件保存失败", error);
+                    this.props.onShowAlert("savingError");
                     return this.props.onProjectError(errorData);
                 }
-                console.log(fileData);
                 // 替换文件
                 const { data: updateData, error: updateError } =
                     await supabase.storage
                         .from("files")
-                        .upload(fileData.file_path, blob, {
-                            upsert: true,
-                        });
+                        .upload(fileData.file_path, blob, { upsert: true });
                 if (updateError) {
-                    window.alert("文件保存失败", updateError);
+                    this.props.onShowAlert("savingError");
                     return this.props.onProjectError(updateError);
                 }
                 // 替换缩略图
@@ -200,7 +198,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
                     const { data: updateData, error: updateError } =
                         await supabase.storage
                             .from("files")
-                            .upload(filePath, blob);
+                            .upload(filePath, blob, { upsert: true });
                     if (updateError) {
                         this.props.onShowAlert("savingError");
                         return this.props.onProjectError(updateError);
@@ -210,7 +208,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
                         .update({ thumbnail_path: filePath })
                         .eq("id", fileData.id);
                     if (error) {
-                        window.alert("文件保存失败", error);
+                        this.props.onShowAlert("savingError");
                         return this.props.onProjectError(errorData);
                     }
                 });
@@ -221,7 +219,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
                         .update({ file_name: this.props.reduxProjectTitle })
                         .eq("id", fileData.id);
                     if (error) {
-                        window.alert("文件保存失败", error);
+                        this.props.onShowAlert("savingError");
                         return this.props.onProjectError(errorData);
                     }
                 }
@@ -242,28 +240,59 @@ const ProjectSaverHOC = function (WrappedComponent) {
                     this.props.onProjectError(err);
                 });
         }
-        createCopyToStorage() {
-            this.props.onShowCreatingCopyAlert();
-            return this.props.onCreatedProject(
-                response.id.toString(),
-                this.props.loadingState
-            );
-            // return this.storeProject(null, {
-            //     originalId: this.props.reduxProjectId,
-            //     isCopy: 1,
-            //     title: this.props.reduxProjectTitle,
-            // })
-            //     .then((response) => {
-            //         this.props.onCreatedProject(
-            //             response.id.toString(),
-            //             this.props.loadingState
-            //         );
-            //         this.props.onShowCopySuccessAlert();
-            //     })
-            //     .catch((err) => {
-            //         this.props.onShowAlert("creatingError");
-            //         this.props.onProjectError(err);
-            //     });
+        async createCopyToStorage() {
+            const {
+                data: {
+                    session: { user },
+                },
+            } = await supabase.auth.getSession();
+            const fileName = this.props.reduxProjectTitle;
+            const uuid = uuidv4();
+            const filePath = `${user.id}/${uuid}.sb3`;
+            const thumbnailPath = `${user.id}/${uuid}.png`;
+            const blob = await this.props.vm.saveProjectSb3();
+            // 上传sb3
+            const { error: uploadError } = await supabase.storage
+                .from("files")
+                .upload(filePath, blob);
+            if (uploadError) {
+                this.props.onShowAlert("另存为失败");
+                return this.props.onProjectError(errorData);
+            }
+            // 上传缩略图
+            this.getProjectThumbnail(async (dataURI) => {
+                const blob = dataURItoBlob(dataURI);
+                const { data: updateData, error: updateError } =
+                    await supabase.storage
+                        .from("files")
+                        .upload(thumbnailPath, blob);
+                if (updateError) {
+                    this.props.onShowAlert("另存为失败");
+                    return this.props.onProjectError(errorData);
+                }
+            });
+            // 上传record
+            const { data: insertData, error: insertError } = await supabase
+                .from("files")
+                .insert({
+                    user_id: user.id, // ⚠️ 必须是 auth 用户 id
+                    file_name: fileName,
+                    file_path: filePath,
+                    thumbnail_path: thumbnailPath,
+                })
+                .select();
+            if (insertError) {
+                this.props.onShowAlert("另存为失败");
+                return this.props.onProjectError(errorData);
+            }
+            // 打开新的文件
+            const {
+                data: { signedUrl: fileUrl },
+            } = await supabase.storage
+                .from("files")
+                .createSignedUrl(insertData[0].file_path, 60 * 60);
+            localStorage.setItem("project-id", insertData[0].id);
+            storage.reduxStore.dispatch(setProjectId(fileUrl));
         }
         createRemixToStorage() {
             this.props.onShowCreatingRemixAlert();
