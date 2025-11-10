@@ -451,7 +451,7 @@ class MenuBar extends React.Component {
                                         {storage.reduxStore.getState()
                                             .scratchGui.projectState
                                             .loadingState ===
-                                            "SHOWING_WITH_ID" && (
+                                            "SHOWING_WITH_ID" && !localStorage.getItem('read-only') && (
                                             <MenuItem
                                                 isRtl={this.props.isRtl}
                                                 onClick={this.handleClickSave}

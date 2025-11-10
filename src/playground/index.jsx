@@ -25,7 +25,7 @@ const param = new URLSearchParams(window.location.search);
 const token = param.get("token");
 const refreshToken = param.get("refresh-token");
 const projectId = param.get("project-id");
-localStorage.setItem('project-id', projectId)
+localStorage.setItem("project-id", projectId);
 // 如果没有，则跳转回原网站
 if (!token || !refreshToken || !projectId) {
     window.location.href =
@@ -100,6 +100,9 @@ if (errorData) {
     this.props.onError(errorData);
     log.error(errorData);
 }
+if (fileData.user_id !== data.session.user.id)
+    localStorage.setItem("read-only", true);
+else localStorage.removeItem("read-only");
 const {
     data: { signedUrl: fileUrl },
 } = await supabase.storage
