@@ -127,6 +127,7 @@ const GUIComponent = props => {
         theme,
         tipsLibraryVisible,
         vm,
+        showAIComponent,
         ...componentProps
     } = omit(props, 'dispatch');
     if (children) {
@@ -359,6 +360,7 @@ const GUIComponent = props => {
                                 isRtl={isRtl}
                                 stageSize={stageSize}
                                 vm={vm}
+                                showAIComponent={showAIComponent}
                             />
                             <Box className={styles.targetWrapper}>
                                 <TargetPane
@@ -367,6 +369,9 @@ const GUIComponent = props => {
                                 />
                             </Box>
                         </Box>
+                        {showAIComponent ? <Box>
+                            Hello
+                        </Box> : null}
                     </Box>
                 </Box>
                 <DragLayer />
@@ -442,7 +447,8 @@ GUIComponent.propTypes = {
     telemetryModalVisible: PropTypes.bool,
     theme: PropTypes.string,
     tipsLibraryVisible: PropTypes.bool,
-    vm: PropTypes.instanceOf(VM).isRequired
+    vm: PropTypes.instanceOf(VM).isRequired,
+    showAIComponent: PropTypes.bool
 };
 GUIComponent.defaultProps = {
     backpackHost: null,
@@ -472,7 +478,8 @@ const mapStateToProps = state => ({
     // This is the button's mode, as opposed to the actual current state
     blocksId: state.scratchGui.timeTravel.year.toString(),
     stageSizeMode: state.scratchGui.stageSize.stageSize,
-    theme: state.scratchGui.theme.theme
+    theme: state.scratchGui.theme.theme,
+    showAIComponent: state.scratchGui.aiComponent.aiComponent
 });
 
 export default injectIntl(connect(

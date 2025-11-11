@@ -58,7 +58,10 @@ const StageHeaderComponent = function (props) {
         onSetStageUnFull,
         showBranding,
         stageSizeMode,
-        vm
+        vm,
+        showAIComponent,
+        onSetAIComponentOpen,
+        onSetAIComponentClose,
     } = props;
 
     let header = null;
@@ -152,6 +155,12 @@ const StageHeaderComponent = function (props) {
                                 />
                             </Button>
                         </div>
+                        <div>
+                            <Button className={styles.stageButton}
+                            onClick={showAIComponent ? onSetAIComponentClose : onSetAIComponentOpen}>
+                                AI
+                            </Button>
+                        </div>
                     </div>
                 </Box>
             </Box>
@@ -163,7 +172,8 @@ const StageHeaderComponent = function (props) {
 
 const mapStateToProps = state => ({
     // This is the button's mode, as opposed to the actual current state
-    stageSizeMode: state.scratchGui.stageSize.stageSize
+    stageSizeMode: state.scratchGui.stageSize.stageSize,
+    showAIComponent: state.scratchGui.aiComponent.aiComponent
 });
 
 StageHeaderComponent.propTypes = {
@@ -177,7 +187,8 @@ StageHeaderComponent.propTypes = {
     onSetStageUnFull: PropTypes.func.isRequired,
     showBranding: PropTypes.bool.isRequired,
     stageSizeMode: PropTypes.oneOf(Object.keys(STAGE_SIZE_MODES)),
-    vm: PropTypes.instanceOf(VM).isRequired
+    vm: PropTypes.instanceOf(VM).isRequired,
+    showAIComponent: PropTypes.bool.isRequired
 };
 
 StageHeaderComponent.defaultProps = {

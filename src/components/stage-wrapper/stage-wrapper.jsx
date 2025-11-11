@@ -18,7 +18,8 @@ const StageWrapperComponent = function (props) {
         isRendererSupported,
         loading,
         stageSize,
-        vm
+        vm,
+        showAIComponent
     } = props;
 
     return (
@@ -33,6 +34,7 @@ const StageWrapperComponent = function (props) {
                 <StageHeader
                     stageSize={stageSize}
                     vm={vm}
+                    showAIComponent={showAIComponent}
                 />
             </Box>
             <Box className={styles.stageCanvasWrapper}>
@@ -58,7 +60,8 @@ StageWrapperComponent.propTypes = {
     isRtl: PropTypes.bool.isRequired,
     loading: PropTypes.bool,
     stageSize: PropTypes.oneOf(Object.keys(STAGE_DISPLAY_SIZES)).isRequired,
-    vm: PropTypes.instanceOf(VM).isRequired
+    vm: PropTypes.instanceOf(VM).isRequired,
+    showAIComponent: PropTypes.bool.isRequired
 };
 
 export default StageWrapperComponent;
