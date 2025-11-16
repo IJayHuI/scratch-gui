@@ -15,6 +15,7 @@ import {
     projectError,
     setProjectId,
 } from "../reducers/project-state";
+import { setProjectTitle } from "../reducers/project-title";
 import { activateTab, BLOCKS_TAB_INDEX } from "../reducers/editor-tab";
 
 import log from "./log";
@@ -71,7 +72,25 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                 this.props.onActivateTab(BLOCKS_TAB_INDEX);
             }
         }
-        fetchProject(projectId, loadingState) {
+        async fetchProject(projectId, loadingState) {
+            if (projectId !== "0") {
+                const { data } = await supabase.auth.getSession();
+                const { data: fileData, error: errorData } = await supabase
+                    .from("files")
+                    .select("*")
+                    .eq("id", projectId)
+                    .single();
+                if (fileData.user_id !== data.session.user.id)
+                    localStorage.setItem("read-only", true);
+                else localStorage.removeItem("read-only");
+                const {
+                    data: { signedUrl: fileUrl },
+                } = await supabase.storage
+                    .from("files")
+                    .createSignedUrl(fileData.file_path, 60 * 60);
+                this.props.setProjectTitle(fileData.file_name);
+                projectId = fileUrl;
+            }
             return storage
                 .load(
                     storage.AssetType.Project,
@@ -110,6 +129,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                 projectId,
                 reduxProjectId,
                 setProjectId: setProjectIdProp,
+                setProjectTitle,
                 /* eslint-enable no-unused-vars */
                 isFetchingWithId: isFetchingWithIdProp,
                 ...componentProps
@@ -143,6 +163,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
             PropTypes.number,
         ]),
         setProjectId: PropTypes.func,
+        setProjectTitle: PropTypes.func,
     };
     ProjectFetcherComponent.defaultProps = {
         assetHost: "https://assets.scratch.mit.edu",
@@ -170,6 +191,8 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         onFetchedProjectData: (projectData, loadingState) =>
             dispatch(onFetchedProjectData(projectData, loadingState)),
         setProjectId: (projectId) => dispatch(setProjectId(projectId)),
+        setProjectTitle: (projectTitle) =>
+            dispatch(setProjectTitle(projectTitle)),
         onProjectUnchanged: () => dispatch(setProjectUnchanged()),
     });
     // Allow incoming props to override redux-provided props. Used to mock in tests.
