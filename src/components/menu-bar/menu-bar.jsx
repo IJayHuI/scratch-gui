@@ -451,14 +451,19 @@ class MenuBar extends React.Component {
                                         {storage.reduxStore.getState()
                                             .scratchGui.projectState
                                             .loadingState ===
-                                            "SHOWING_WITH_ID" && !localStorage.getItem('read-only') && (
-                                            <MenuItem
-                                                isRtl={this.props.isRtl}
-                                                onClick={this.handleClickSave}
-                                            >
-                                                保存到 BlockCode
-                                            </MenuItem>
-                                        )}
+                                            "SHOWING_WITH_ID" &&
+                                            !localStorage.getItem(
+                                                "read-only"
+                                            ) && (
+                                                <MenuItem
+                                                    isRtl={this.props.isRtl}
+                                                    onClick={
+                                                        this.handleClickSave
+                                                    }
+                                                >
+                                                    保存到 BlockCode
+                                                </MenuItem>
+                                            )}
                                         {storage.reduxStore.getState()
                                             .scratchGui.projectState
                                             .loadingState ===
@@ -469,23 +474,23 @@ class MenuBar extends React.Component {
                                                     this.handleClickSaveAsCopy
                                                 }
                                             >
-                                                另存为新作品到 BlockCode
+                                                作为新作品另存到 BlockCode
                                             </MenuItem>
                                         )}
                                         {storage.reduxStore.getState()
                                             .scratchGui.projectState
                                             .loadingState ===
                                             "SHOWING_WITHOUT_ID" && (
-                                                <MenuItem
-                                                    isRtl={this.props.isRtl}
-                                                    onClick={
-                                                        this
-                                                            .handleClickCreateProject
-                                                    }
-                                                >
-                                                    保存此作品到 BlockCode
-                                                </MenuItem>
-                                            )}
+                                            <MenuItem
+                                                isRtl={this.props.isRtl}
+                                                onClick={
+                                                    this
+                                                        .handleClickCreateProject
+                                                }
+                                            >
+                                                保存此作品到 BlockCode
+                                            </MenuItem>
+                                        )}
                                     </MenuSection>
                                     {(this.props.canSave ||
                                         this.props.canCreateCopy ||
